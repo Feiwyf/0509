@@ -8,6 +8,8 @@ let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
 let circlePos = { x: 320, y: 240 }; // 圓的初始位置
 let circleRadius = 50; // 圓的半徑
+let trail = []; // 儲存圓心軌跡的陣列
+let lineColor = [255, 0, 0]; // 初始顏色為紅色
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -34,8 +36,18 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
+  // 繪製圓心軌跡
+  stroke(lineColor[0], lineColor[1], lineColor[2]); // 使用線條顏色
+  strokeWeight(10); // 設定線條粗細為 10
+  noFill();
+  beginShape();
+  for (let pos of trail) {
+    vertex(pos.x, pos.y);
+  }
+  endShape();
+
   // 繪製可拖曳的圓
-  fill(0, 255, 0, 150); // 半透明綠色
+  fill(lineColor[0], lineColor[1], lineColor[2], 150); // 大圓顏色與線條顏色相同
   noStroke();
   circle(circlePos.x, circlePos.y, circleRadius * 2);
 
@@ -58,25 +70,6 @@ function draw() {
           circle(keypoint.x, keypoint.y, 16);
         }
 
-        // 繪製手部關鍵點之間的線條
-        let ranges = [
-          [0, 1, 2, 3, 4],   // 0 到 4
-          [5, 6, 7, 8],      // 5 到 8
-          [9, 10, 11, 12],   // 9 到 12
-          [13, 14, 15, 16],  // 13 到 16
-          [17, 18, 19, 20]   // 17 到 20
-        ];
-
-        for (let r of ranges) {
-          for (let j = 0; j < r.length - 1; j++) {
-            let start = hand.keypoints[r[j]];
-            let end = hand.keypoints[r[j + 1]];
-            stroke(hand.handedness == "Left" ? color(255, 0, 255) : color(255, 255, 0));
-            strokeWeight(2);
-            line(start.x, start.y, end.x, end.y);
-          }
-        }
-
         // 檢查是否用食指和大拇指夾住圓
         let indexFinger = hand.keypoints[8]; // 食指關鍵點
         let thumb = hand.keypoints[4]; // 大拇指關鍵點
@@ -94,10 +87,18 @@ function draw() {
         if (isDragging) {
           circlePos.x = indexFinger.x + dragOffset.x;
           circlePos.y = indexFinger.y + dragOffset.y;
+
+          // 將圓心位置加入軌跡
+          trail.push({ x: circlePos.x, y: circlePos.y });
         }
       }
     }
   } else {
     isDragging = false; // 如果沒有檢測到手，停止拖曳
+  }
+
+  // 當停止拖曳時，清空軌跡
+  if (!isDragging) {
+    trail = [];
   }
 }
