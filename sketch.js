@@ -30,32 +30,32 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
-  // Ensure at least one hand is detected
+  // 確保至少檢測到一隻手
   if (hands.length > 0) {
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
-        // Loop through keypoints and draw circles
+        // 繪製手部關鍵點的圓
         for (let i = 0; i < hand.keypoints.length; i++) {
           let keypoint = hand.keypoints[i];
 
-          // Color-code based on left or right hand
+          // 根據左右手設定顏色
           if (hand.handedness == "Left") {
-            fill(255, 0, 255);
+            fill(255, 0, 255); // 左手：紫色
           } else {
-            fill(255, 255, 0);
+            fill(255, 255, 0); // 右手：黃色
           }
 
           noStroke();
           circle(keypoint.x, keypoint.y, 16);
         }
 
-        // Draw lines connecting keypoints
+        // 繪製手部關鍵點之間的線條
         let ranges = [
-          [0, 1, 2, 3, 4],   // 0 to 4
-          [5, 6, 7, 8],      // 5 to 8
-          [9, 10, 11, 12],   // 9 to 12
-          [13, 14, 15, 16],  // 13 to 16
-          [17, 18, 19, 20]   // 17 to 20
+          [0, 1, 2, 3, 4],   // 0 到 4
+          [5, 6, 7, 8],      // 5 到 8
+          [9, 10, 11, 12],   // 9 到 12
+          [13, 14, 15, 16],  // 13 到 16
+          [17, 18, 19, 20]   // 17 到 20
         ];
 
         for (let r of ranges) {
@@ -67,6 +67,12 @@ function draw() {
             line(start.x, start.y, end.x, end.y);
           }
         }
+
+        // 繪製隨食指移動的圓
+        let indexFinger = hand.keypoints[8]; // 食指關鍵點
+        fill(0, 255, 0, 150); // 半透明綠色
+        noStroke();
+        circle(indexFinger.x, indexFinger.y, 100); // 圓的直徑為 100
       }
     }
   }
