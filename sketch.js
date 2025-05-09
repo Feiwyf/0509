@@ -4,6 +4,10 @@
 let video;
 let handPose;
 let hands = [];
+let isDragging = false;
+let dragOffset = { x: 0, y: 0 };
+let circlePos = { x: 320, y: 240 }; // 圓的初始位置
+let circleRadius = 50; // 圓的半徑
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -29,6 +33,11 @@ function setup() {
 
 function draw() {
   image(video, 0, 0);
+
+  // 繪製可拖曳的圓
+  fill(0, 255, 0, 150); // 半透明綠色
+  noStroke();
+  circle(circlePos.x, circlePos.y, circleRadius * 2);
 
   // 確保至少檢測到一隻手
   if (hands.length > 0) {
@@ -68,12 +77,27 @@ function draw() {
           }
         }
 
-        // 繪製隨食指移動的圓
+        // 檢查是否用食指和大拇指夾住圓
         let indexFinger = hand.keypoints[8]; // 食指關鍵點
-        fill(0, 255, 0, 150); // 半透明綠色
-        noStroke();
-        circle(indexFinger.x, indexFinger.y, 100); // 圓的直徑為 100
+        let thumb = hand.keypoints[4]; // 大拇指關鍵點
+
+        let distance = dist(indexFinger.x, indexFinger.y, thumb.x, thumb.y);
+        if (distance < circleRadius * 2) {
+          if (!isDragging) {
+            isDragging = true;
+            dragOffset.x = circlePos.x - indexFinger.x;
+            dragOffset.y = circlePos.y - indexFinger.y;
+          }
+        }
+
+        // 如果正在拖曳，更新圓的位置
+        if (isDragging) {
+          circlePos.x = indexFinger.x + dragOffset.x;
+          circlePos.y = indexFinger.y + dragOffset.y;
+        }
       }
     }
+  } else {
+    isDragging = false; // 如果沒有檢測到手，停止拖曳
   }
 }
